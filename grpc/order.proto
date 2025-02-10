@@ -1,0 +1,21 @@
+syntax = "proto3"; //phiên bản của Protocol Buffers
+
+package proto; //giống như namespace, nó giúp tránh xung đột tên khi sử dụng nhiều file .proto.
+
+option go_package = "./;proto"; // chỉ định package Go khi tạo code từ file .proto. "./ thư mục hiện tại, proto tên package"
+
+service OrderService { // định nghĩa grpc service
+    // RPC Method
+    rpc NewOrder(NewRequestOrder) returns (NewResponseOrder) {};
+}
+
+//message dùng để định nghĩa một kiểu dữ liệu
+message NewRequestOrder {
+    string orderRequest = 1;
+}
+
+message NewResponseOrder {
+    string orderResponse = 2; // field number
+}
+
+// mỗi trường duoc gan cho 1 field number duy nhat
