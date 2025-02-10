@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 
 	proto "github.com/quangnt/go-grpc/grpc"
 	"google.golang.org/grpc"
@@ -20,8 +21,13 @@ type server struct { //Struct server sẽ implement interface OrderServiceServer
 }
 
 func (s *server) NewOrder(ctx context.Context, in *proto.NewRequestOrder) (*proto.NewResponseOrder, error) {
-	log.Printf("Received order:::%v", in.GetOrderRequest())
-	return &proto.NewResponseOrder{OrderResponse: "new orderId " + in.GetOrderRequest()}, nil
+	log.Printf("Received order:::%v %v %d", in.GetOrderRequest(), in.GetDescription(), in.GetId())
+
+	callbackClient := &proto.NewResponseOrder{
+		OrderId: "new orderId " + strconv.Itoa(int(in.GetId())),
+		Result:  "success::" + in.GetDescription(),
+	}
+	return callbackClient, nil //Trả về response cho client
 }
 
 func main() {
@@ -32,7 +38,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	proto.RegisterOrderServiceServer(s, &server{})
+	proto.RegisterOrderServiceServer(s, &server{}) //Đăng ký service OrderServiceServer
 	log.Printf("server listening on port %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatal(err)

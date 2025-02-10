@@ -12,10 +12,13 @@ service OrderService { // định nghĩa grpc service
 //message dùng để định nghĩa một kiểu dữ liệu
 message NewRequestOrder {
     string orderRequest = 1;
+    string description = 2;
+    int32 id = 3;
 }
 
 message NewResponseOrder {
-    string orderResponse = 2; // field number
+    string orderId = 1; // field number
+    string result = 2; // field number
 }
 
 // mỗi trường duoc gan cho 1 field number duy nhat

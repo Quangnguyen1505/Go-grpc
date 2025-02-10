@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OrderServiceClient interface {
-	// định nghĩa grpc service
+	// RPC Method
 	NewOrder(ctx context.Context, in *NewRequestOrder, opts ...grpc.CallOption) (*NewResponseOrder, error)
 }
 
@@ -47,7 +47,7 @@ func (c *orderServiceClient) NewOrder(ctx context.Context, in *NewRequestOrder, 
 // All implementations must embed UnimplementedOrderServiceServer
 // for forward compatibility
 type OrderServiceServer interface {
-	// định nghĩa grpc service
+	// RPC Method
 	NewOrder(context.Context, *NewRequestOrder) (*NewResponseOrder, error)
 	mustEmbedUnimplementedOrderServiceServer()
 }
