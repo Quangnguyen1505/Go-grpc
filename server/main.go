@@ -7,9 +7,11 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"time"
 
 	proto "github.com/quangnt/go-grpc/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -27,7 +29,52 @@ func (s *server) NewOrder(ctx context.Context, in *proto.NewRequestOrder) (*prot
 		OrderId: "new orderId " + strconv.Itoa(int(in.GetId())),
 		Result:  "success::" + in.GetDescription(),
 	}
+
+	product := map[string]interface{}{
+		"name":     "áo cổ lọ",
+		"color":    "white",
+		"quantity": 3,
+	}
+
+	go sendOrderToPaymentHandle(strconv.Itoa(int(in.GetId())), product)
+
 	return callbackClient, nil //Trả về response cho client
+}
+
+func sendOrderToPaymentHandle(orderId string, product interface{}) {
+	address := "localhost:9001"
+
+	// Chuyển đổi product thành struct proto.PaymentDataProduct
+	productMap, ok := product.(map[string]interface{})
+	if !ok {
+		log.Fatal("product is not a valid map[string]interface{}")
+	}
+
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("server order connect to payment error %v", err)
+	}
+	defer conn.Close()
+
+	c := proto.NewPaymentServiceClient(conn)
+
+	payment := &proto.PaymentRequest{
+		OrderId: orderId,
+		Product: &proto.PaymentDataProduct{
+			Name:     productMap["name"].(string),
+			Color:    productMap["color"].(string),
+			Quantity: int32(productMap["quantity"].(int)),
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := c.NewPayment(ctx, payment)
+	if err != nil {
+		log.Fatalf("could not greate: %v", err)
+	}
+	log.Printf("Status: %s and message: %s", r.GetStatus(), r.GetMessage())
 }
 
 func main() {
